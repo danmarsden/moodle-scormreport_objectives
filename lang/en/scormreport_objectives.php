@@ -17,9 +17,9 @@
 /**
  * Strings for component 'scorm_objectives' report plugin
  *
- * @package   scormreport
- * @subpackage objectives
+ * @package   scormreport_objectives
  * @author    Dan Marsden <dan@danmarsden.com>
+ * @copyright 2013 Dan Marsden
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

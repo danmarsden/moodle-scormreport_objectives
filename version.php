@@ -17,14 +17,14 @@
 
 /**
  * Defines the version of scorm_objectives
- * @package   scormreport
- * @subpackage objectives
+ * @package   scormreport_objectives
  * @author    Dan Marsden <dan@danmarsden.com>
+ * @copyright 2013 Dan Marsden
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013061100;                 // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013050100;                 // Requires this Moodle version
-$plugin->component = 'scormreport_objectives'; // Full name of the plugin (used for diagnostics)
+$plugin->version   = 2013061100;
+$plugin->requires  = 2013050100;
+$plugin->component = 'scormreport_objectives';
