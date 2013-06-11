@@ -55,9 +55,12 @@ class scorm_objectives_report extends scorm_default_report {
         $mform = new mod_scorm_report_objectives_settings($PAGE->url, compact('currentgroup'));
         if ($fromform = $mform->get_data()) {
             $pagesize = $fromform->pagesize;
+            $showobjectivescore = $fromform->objectivescore;
             set_user_preference('scorm_report_pagesize', $pagesize);
+            set_user_preference('scorm_report_objectives_score', $showobjectivescore);
         } else {
             $pagesize = get_user_preferences('scorm_report_pagesize', 0);
+            $showobjectivescore = get_user_preferences('scorm_report_objectives_score', 0);
         }
         if ($pagesize < 1) {
             $pagesize = SCORM_REPORT_DEFAULT_PAGE_SIZE;
@@ -66,6 +69,7 @@ class scorm_objectives_report extends scorm_default_report {
         // select group menu
         $displayoptions = array();
         $displayoptions['attemptsmode'] = $attemptsmode;
+        $displayoptions['objectivescore'] = $showobjectivescore;
 
         $mform->set_data($displayoptions + array('pagesize' => $pagesize));
         if ($groupmode = groups_get_activity_groupmode($cm)) {   // Groups are being used
@@ -179,8 +183,12 @@ class scorm_objectives_report extends scorm_default_report {
 
             foreach ($objectives as $scoid => $sco) {
                 foreach ($sco as $objectiveid => $name) {
-                    $columns[] = $scoid.'objective' . $objectiveid;
-                    $headers[] = $name;
+                    $columns[] = $scoid.'objectivestatus' . $objectiveid;
+                    $headers[] = $name. ' '. get_string('status', 'scormreport_objectives');
+                    if ($displayoptions['objectivescore']) {
+                        $columns[] = $scoid.'objectivescore' . $objectiveid;
+                        $headers[] = $name. ' '. get_string('score', 'scormreport_objectives');
+                    }
                 }
             }
 
@@ -453,11 +461,25 @@ class scorm_objectives_report extends scorm_default_report {
                                 // interaction data
                                 if (!empty($objectives[$trackdata->scoid])) {
                                     foreach ($objectives[$trackdata->scoid] as $objectiveid => $name) {
-                                        $element='cmi.objectives_'.$objectiveid.'.status';
+                                        if (scorm_version_check($scorm->version, SCORM_13)) {
+                                            $element='cmi.objectives_'.$objectiveid.'.completion_status';
+                                        } else {
+                                            $element='cmi.objectives_'.$objectiveid.'.status';
+                                        }
+
                                         if (isset($trackdata->$element)) {
                                             $row[] = s($trackdata->$element);
                                         } else {
                                             $row[] = '&nbsp;';
+                                        }
+                                        if ($displayoptions['objectivescore']) {
+                                            $element='cmi.objectives_'.$objectiveid.'.score.raw';
+                                            if (isset($trackdata->$element)) {
+                                                $row[] = s($trackdata->$element);
+                                            } else {
+                                                $row[] = '&nbsp;';
+                                            }
+
                                         }
                                     }
                                 }

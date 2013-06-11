@@ -40,6 +40,7 @@ class mod_scorm_report_objectives_settings extends moodleform {
             $options[SCORM_REPORT_ATTEMPTS_STUDENTS_WITH_NO] = get_string('optnoattemptsonly', 'scorm');
         }
         $mform->addElement('select', 'attemptsmode', get_string('show', 'scorm'), $options);
+        $mform->addElement('advcheckbox', 'objectivescore', '',get_string('objectivescore', 'scormreport_objectives'));
 
         //-------------------------------------------------------------------------------
         $mform->addElement('header', 'preferencesuser', get_string('preferencesuser', 'scorm'));
