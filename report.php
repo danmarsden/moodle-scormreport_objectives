@@ -188,14 +188,18 @@ class scorm_objectives_report extends scorm_default_report {
             $nbmaincolumns = count($columns); // Get number of main columns used.
 
             $objectives = get_scorm_objectives($scorm->id);
-
+            $nosort = array();
             foreach ($objectives as $scoid => $sco) {
-                foreach ($sco as $objectiveid => $name) {
-                    $columns[] = $scoid.'objectivestatus' . $objectiveid;
-                    $headers[] = $name. ' '. get_string('status', 'scormreport_objectives');
+                foreach ($sco as $id => $objectivename) {
+                    $colid = $scoid.'objectivestatus' . $id;
+                    $columns[] = $colid;
+                    $nosort[] = $colid;
+                    $headers[] = $objectivename. ' '. get_string('status', 'scormreport_objectives');
                     if ($displayoptions['objectivescore']) {
-                        $columns[] = $scoid.'objectivescore' . $objectiveid;
-                        $headers[] = $name. ' '. get_string('score', 'scormreport_objectives');
+                        $colid = $scoid.'objectivescore' . $id;
+                        $columns[] = $colid;
+                        $nosort[] = $colid;
+                        $headers[] = $objectivename. ' '. get_string('score', 'scormreport_objectives');
                     }
                 }
             }
@@ -215,6 +219,9 @@ class scorm_objectives_report extends scorm_default_report {
                 $table->column_suppress('fullname');
                 foreach ($extrafields as $field) {
                     $table->column_suppress($field);
+                }
+                foreach ($nosort as $field) {
+                    $table->no_sorting($field);
                 }
 
                 $table->no_sorting('start');
@@ -470,24 +477,47 @@ class scorm_objectives_report extends scorm_default_report {
                                 } else {
                                     $row[] = $score;
                                 }
+                                // Iterate over tracks and match objective id against values.
+                                $keywords = array("cmi.objectives_", ".id");
+                                $objectivestatus = array();
+                                $objectivescore = array();
+                                foreach ($trackdata as $name => $value) {
+                                    if (strpos($name, 'cmi.objectives_') === 0 && strrpos($name, '.id') !== false) {
+                                        $num = trim(str_ireplace($keywords, '', $name));
+                                        if (is_numeric($num)) {
+                                            if (scorm_version_check($scorm->version, SCORM_13)) {
+                                                $element='cmi.objectives_'.$num.'.completion_status';
+                                            } else {
+                                                $element='cmi.objectives_'.$num.'.status';
+                                            }
+                                            if (isset($trackdata->$element)) {
+                                                $objectivestatus[$value] = $trackdata->$element;
+                                            } else {
+                                                $objectivestatus[$value] = '';
+                                            }
+                                            if ($displayoptions['objectivescore']) {
+                                                $element='cmi.objectives_'.$num.'.score.raw';
+                                                if (isset($trackdata->$element)) {
+                                                    $objectivescore[$value] = $trackdata->$element;
+                                                } else {
+                                                    $objectivescore[$value] = '';
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                                 // Interaction data.
                                 if (!empty($objectives[$trackdata->scoid])) {
-                                    foreach ($objectives[$trackdata->scoid] as $objectiveid => $name) {
-                                        if (scorm_version_check($scorm->version, SCORM_13)) {
-                                            $element='cmi.objectives_'.$objectiveid.'.completion_status';
-                                        } else {
-                                            $element='cmi.objectives_'.$objectiveid.'.status';
-                                        }
-
-                                        if (isset($trackdata->$element)) {
-                                            $row[] = s($trackdata->$element);
+                                    foreach ($objectives[$trackdata->scoid] as $name) {
+                                        if (isset($objectivestatus[$name])) {
+                                            $row[] = s($objectivestatus[$name]);
                                         } else {
                                             $row[] = '&nbsp;';
                                         }
                                         if ($displayoptions['objectivescore']) {
-                                            $element='cmi.objectives_'.$objectiveid.'.score.raw';
-                                            if (isset($trackdata->$element)) {
-                                                $row[] = s($trackdata->$element);
+                                            if (isset($objectivescore[$name])) {
+                                                $row[] = s($objectivescore[$name]);
                                             } else {
                                                 $row[] = '&nbsp;';
                                             }
@@ -605,14 +635,10 @@ function get_scorm_objectives($scormid) {
     $select .= $DB->sql_like("element", "?", false);
     $params[] = $scormid;
     $params[] = "cmi.objectives_%.id";
-    $rs = $DB->get_recordset_select("scorm_scoes_track", $select, $params, 'element');
-    $keywords = array("cmi.objectives_", ".id");
+    $rs = $DB->get_recordset_select("scorm_scoes_track", $select, $params, 'value', 'DISTINCT value, scoid');
     if ($rs->valid()) {
         foreach ($rs as $record) {
-            $num = trim(str_ireplace($keywords, '', $record->element));
-            if (is_numeric($num)) {
-                $objectives[$record->scoid][$num] = $record->value;
-            }
+            $objectives[$record->scoid][] = $record->value;
         }
     }
     $rs->close();
