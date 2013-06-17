@@ -640,6 +640,10 @@ function get_scorm_objectives($scormid) {
         foreach ($rs as $record) {
             $objectives[$record->scoid][] = $record->value;
         }
+        // Now naturally sort the sco arrays.
+        foreach ($objectives as $scoid => $sco) {
+            sort($objectives[$scoid], SORT_NATURAL);
+        }
     }
     $rs->close();
     return $objectives;
