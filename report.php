@@ -194,8 +194,15 @@ class scorm_objectives_report extends scorm_default_report {
                     $colid = $scoid.'objectivestatus' . $id;
                     $columns[] = $colid;
                     $nosort[] = $colid;
-                    $headers[] = $objectivename. ' '. get_string('status', 'scormreport_objectives');
-                    if ($displayoptions['objectivescore']) {
+
+                    if (!$displayoptions['objectivescore']) {
+                        // Display the objective name only.
+                        $headers[] = $objectivename;
+                    } else {
+                        // Display the objective status header with a "status" suffix to avoid confusion.
+                        $headers[] = $objectivename. ' '. get_string('status', 'scormreport_objectives');
+
+                        // Now print objective score headers.
                         $colid = $scoid.'objectivescore' . $id;
                         $columns[] = $colid;
                         $nosort[] = $colid;
