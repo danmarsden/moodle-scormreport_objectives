@@ -211,7 +211,9 @@ class scorm_objectives_report extends scorm_default_report {
                 }
             }
 
+            $emptycell = ''; // Used when an empty cell is being printed - in html we add a space.
             if (!$download) {
+                $emptycell = '&nbsp;';
                 $table = new flexible_table('mod-scorm-report');
 
                 $table->define_columns($columns);
@@ -520,13 +522,13 @@ class scorm_objectives_report extends scorm_default_report {
                                         if (isset($objectivestatus[$name])) {
                                             $row[] = s($objectivestatus[$name]);
                                         } else {
-                                            $row[] = '&nbsp;';
+                                            $row[] = $emptycell;
                                         }
                                         if ($displayoptions['objectivescore']) {
                                             if (isset($objectivescore[$name])) {
                                                 $row[] = s($objectivescore[$name]);
                                             } else {
-                                                $row[] = '&nbsp;';
+                                                $row[] = $emptycell;
                                             }
 
                                         }
@@ -544,7 +546,7 @@ class scorm_objectives_report extends scorm_default_report {
                                 }
                                 // Complete the empty cells.
                                 for ($i=0; $i < count($columns) - $nbmaincolumns; $i++) {
-                                    $row[] = '&nbsp;';
+                                    $row[] = $emptycell;
                                 }
                             }
                         }
