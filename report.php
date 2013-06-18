@@ -651,7 +651,7 @@ function get_scorm_objectives($scormid) {
         }
         // Now naturally sort the sco arrays.
         foreach ($objectives as $scoid => $sco) {
-            sort($objectives[$scoid], SORT_NATURAL);
+            natsort($objectives[$scoid]);
         }
     }
     $rs->close();
